@@ -28,27 +28,26 @@ parser.add_argument("--batchsize", type=int, default=184, help="Test batch size"
 parser.add_argument("--threads", type=int, default=4, help="Number of threads for data loader to use, Default=1")
 parser.add_argument("--path_data", default="Path to h5py file", type=str, help="Test datapath")
 parser.add_argument("--save_model_path", default="Path to load checkpoint files", type=str, help="Save model path")
-parser.add_argument("--confusion_matrix", default="Path to save the result", type=str, help="Confusion matrix")
+parser.add_argument("--results", default="Path to save the result", type=str, help="Confusion matrix")
 parser.add_argument("--cuda", type=str, default='0')
 
 def main():
 
     global opt, model
     opt = parser.parse_args()
-
+    
     save_model_path = opt.save_model_path
     path_data = opt.path_data
     batchsize = opt.batchsize
-
     device = get_default_device()
 
-    ## Load model
+    # Load model
     print('Load model')
     model = Fusion_model()
     model = to_device(model, device)
     model = torch.nn.DataParallel(model).cuda()
 
-    ## Load data
+    # Load data
     print('Load data')
     dataset = DatasetFromHdf5(path_data)
     dataloader = DataLoader(dataset=dataset, num_workers=opt.threads, batch_size=batchsize, shuffle=False)
@@ -65,19 +64,7 @@ def main():
         print("==>Test, Accuracy: {:.3f}".format(
                 accuracy))
         print(checkpoint_save_path)
-
-        # Draw_confusion_matrix(cm= Array_CM, normalize=True,
-        #                   target_names=['Resonant', 'NonResonant'],
-        #                   title='Confusion Matrix for epoch {}'.format(save_name), path=i)
         i += 1
-
-
-def rgb2gray(rgb):
-
-    r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
-    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
-
-    return gray
 
 def check_accuracy(dataloader, model):
   model.eval()
@@ -105,20 +92,21 @@ def check_accuracy(dataloader, model):
   print(re_criterion(MS_images[10, 10, :, :, :].cpu(), re_outputs[10, 10, :, :, :].cpu()))
   print(MSSSIM_criterion(MS_images[:, 10, :, :, :].cpu(), re_outputs[:, 10, :, :, :].cpu()))
 
-
-  # image = MS_images[10, 10, :, :, :].cpu()
-  # image = image.permute(1, 2, 0)
-  # image = np.array(image)
-  # image1 = rgb2gray(image)
-  # plt.imshow((image1 * 255).astype(np.uint8), cmap="gray")
-  # plt.show()
-  #
-  # image = re_outputs[10, 10, :, :, :].cpu()
-  # image = image.permute(1, 2, 0)
-  # image = np.array(image)
-  # image2 = rgb2gray(image)
-  # plt.imshow((image2 * 255).astype(np.uint8), cmap="gray")
-  # plt.show()
+  
+  # Test the reconstruction performance
+  image = MS_images[10, 10, :, :, :].cpu()
+  image = image.permute(1, 2, 0)
+  image = np.array(image)
+  image1 = rgb2gray(image)
+  plt.imshow((image1 * 255).astype(np.uint8), cmap="gray")
+  plt.show()
+  
+  image = re_outputs[10, 10, :, :, :].cpu()
+  image = image.permute(1, 2, 0)
+  image = np.array(image)
+  image2 = rgb2gray(image)
+  plt.imshow((image2 * 255).astype(np.uint8), cmap="gray")
+  plt.show()
 
   return accuracy
 
