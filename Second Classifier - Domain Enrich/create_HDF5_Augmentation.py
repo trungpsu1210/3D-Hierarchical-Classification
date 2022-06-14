@@ -9,10 +9,10 @@ import pandas as pd
 from numpy import ndarray
 from scipy import ndimage
 
-parser = argparse.ArgumentParser(description='Generate H5 file')
+parser = argparse.ArgumentParser(description='Generate H5 Augmentation file')
 
-parser.add_argument("--path_IMG",type=str,default = '/cvdata2/trung/Sonar Project/Second Stage/Dataset/Second Stage/Dataset 80-20 Jointly Train/20 pct - 46 samples/All')
-parser.add_argument("--path_write_h5",type=str, default = './H5/Low - Aug/Train_20_pct_46_samples_Ag.h5')
+parser.add_argument("--path_IMG",type=str,default = 'Path to data image folder')
+parser.add_argument("--path_write_h5",type=str, default = 'Path to save H5 file')
 parser.add_argument("--num_slices", type=str, default=20)
 parser.add_argument("--num_Munition", type=int, default=15)
 parser.add_argument("--num_Shotput", type=int, default=13)
@@ -35,21 +35,21 @@ dir_data = glob.glob(path_dataset + '/*')
 num_slices = opt.num_slices
 num_total_subvolumes = len(dir_data)
 
-### Multi Slice data
+# Multi Slice data
 dataset_multislice_original = np.zeros([num_total_subvolumes, num_slices, dim_channel_img, resized_height_img, resized_width_img])
 dataset_multislice_90 = np.zeros([num_total_subvolumes, num_slices, dim_channel_img, resized_height_img, resized_width_img])
 dataset_multislice_180 = np.zeros([num_total_subvolumes, num_slices, dim_channel_img, resized_height_img, resized_width_img])
 dataset_multislice_270 = np.zeros([num_total_subvolumes, num_slices, dim_channel_img, resized_height_img, resized_width_img])
 
-### Alongtrack data
+# Alongtrack data
 dataset_alongtrack_original = np.zeros([num_total_subvolumes, dim_channel_img, dim_height_img, dim_width_img])
 dataset_alongtrack_augmented = np.zeros([num_total_subvolumes, dim_channel_img, dim_height_img, dim_width_img])
 
-### Crosstrack data
+# Crosstrack data
 dataset_crosstrack_original = np.zeros([num_total_subvolumes, dim_channel_img, dim_height_img, dim_width_img])
 dataset_crosstrack_augmented = np.zeros([num_total_subvolumes, dim_channel_img, dim_height_img, dim_width_img])
 
-### label
+# label
 dataset_label = np.zeros([num_total_subvolumes, 1])
 
 ID_slice = []
@@ -71,9 +71,8 @@ for path_folder in dir_data:
     ID = int(path_folder.split('/')[-1][:5])
     ID_subvolume.append(ID)
 
-    ### read and save image
-
-    ### Multi Slices
+    # read and save image
+    # Multi Slices
     dir_img_MS = sorted(glob.glob(path_folder + '/MultiSlices' + '/*.png'))
     for i in range (0, num_slices, 1):
         img = cv2.imread(dir_img_MS[i])
@@ -81,8 +80,7 @@ for path_folder in dir_data:
         img = center_crop(img, (dim_height_img, dim_width_img))
         img_original = cv2.resize(img, (resized_height_img, resized_width_img), interpolation=cv2.INTER_AREA)
 
-
-        ### Data Augmentation
+        # Data Augmentation
         img_90 = ndimage.rotate(img_original, 90)
         img_180 = ndimage.rotate(img_original, 180)
         img_270 = ndimage.rotate(img_original, 270)
@@ -99,7 +97,7 @@ for path_folder in dir_data:
 
         ID_slice.append(ID)
 
-    ### Along-track
+    # Along-track
     dir_img_AT = glob.glob(path_folder + '/AlongTrack' + '/*.png')
     img = cv2.imread(dir_img_AT[0])
     img = img[:, :, :].astype(np.float32) / 255
@@ -108,7 +106,7 @@ for path_folder in dir_data:
     dataset_alongtrack_original[subvolume, :, :, :] = img
     dataset_crosstrack_augmented[subvolume, :, :, :] = img
 
-    ### Cross-track
+    # Cross-track
     dir_img_CT = glob.glob(path_folder + '/CrossTrack' + '/*.png')
     img = cv2.imread(dir_img_CT[0])
     img = img[:, :, :].astype(np.float32) / 255
@@ -119,8 +117,7 @@ for path_folder in dir_data:
 
     subvolume += 1
 
-### label
-#Resonant_NonResonant = [1 if k < num_resonant_samples else 0 for k in ID_subvolume]
+# label
 for k in ID_subvolume:
     if k < num_Munition + 1:
         dataset_label[ID_subvolume.index(k)] = 0
@@ -153,13 +150,13 @@ dataset_crosstrack_augmented = np.array(dataset_crosstrack_augmented)
 
 dataset_label = np.array(dataset_label)
 
-### Concatenation
-
+# Concatenation
 dataset_multislice = np.concatenate((dataset_multislice_original, dataset_multislice_90, dataset_multislice_180, dataset_multislice_270), axis= 0)
 dataset_alongtrack = np.concatenate((dataset_alongtrack_original, dataset_alongtrack_augmented, dataset_alongtrack_original, dataset_alongtrack_augmented), axis= 0)
 dataset_crosstrack = np.concatenate((dataset_crosstrack_original, dataset_crosstrack_augmented, dataset_crosstrack_original, dataset_crosstrack_augmented), axis= 0)
 label = np.concatenate((dataset_label, dataset_label, dataset_label, dataset_label), axis = 0)
 
+# Check
 print(sum(label))
 print(label.shape)
 print(dataset_multislice.shape)
@@ -168,12 +165,9 @@ print(dataset_crosstrack.shape)
 
 
 # save all the data into H5py
-
 h5w = h5py.File(opt.path_write_h5, 'w')
-
 h5w.create_dataset(name='dataset_multislice', dtype=np.float32, shape=dataset_multislice.shape, data=dataset_multislice)
 h5w.create_dataset(name='dataset_alongtrack', dtype=np.float32, shape=dataset_alongtrack.shape, data=dataset_alongtrack)
 h5w.create_dataset(name='dataset_crosstrack', dtype=np.float32, shape=dataset_crosstrack.shape, data=dataset_crosstrack)
 h5w.create_dataset(name='dataset_label', dtype=int, shape=label.shape, data=label)
-
 h5w.close()
