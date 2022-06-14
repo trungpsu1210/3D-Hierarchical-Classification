@@ -20,29 +20,15 @@ import h5py
 import sklearn.metrics
 from sklearn.metrics import plot_precision_recall_curve
 from sklearn.metrics import confusion_matrix
-
 import pytorch_msssim
 
 parser = argparse.ArgumentParser(description="Test the performance of model")
 
-parser.add_argument("--batchsize", type=int, default=184, help="Training batch size")
-
-### input NoConvLSTM
-# parser.add_argument("--path_data", default="./H5/Test/288_samples_Test_32_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_model_path", default="./Checkpoint/NoConvLSTM/288 samples/32 Slices", type=str, help="Save model path")
-# parser.add_argument("--confusion_matrix", default="./Result/NoConvLSTM/288 samples/32 Slices", type=str, help="Confusion matrix")
-
-### input ConvLSTM
-# parser.add_argument("--path_data", default="./H5/Test/288_samples_Test_32_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_model_path", default="./Checkpoint/ConvLSTM/288 samples/32 Slices", type=str, help="Save model path")
-# parser.add_argument("--confusion_matrix", default="./Result/ConvLSTM/288 samples/32 Slices", type=str, help="Confusion matrix")
-
-### input Bidirectional ConvLSTM
+parser.add_argument("--batchsize", type=int, default=184, help="Test batch size")
 parser.add_argument("--threads", type=int, default=4, help="Number of threads for data loader to use, Default=1")
-parser.add_argument("--path_data", default="./H5/High - Aug/Test_20_pct_46_samples.h5", type=str, help="Training datapath")
-parser.add_argument("--save_model_path", default="./Checkpoint/High - Aug/0.002-0.001-0.00016-0.75", type=str, help="Save model path")
-#parser.add_argument("--save_model_path", default="./Checkpoint/High - No Aug/Metrics", type=str, help="Save model path")
-parser.add_argument("--confusion_matrix", default="./Results/High - Aug/0.002-0.001-0.00016-0.75", type=str, help="Confusion matrix")
+parser.add_argument("--path_data", default="Path to h5py file", type=str, help="Test datapath")
+parser.add_argument("--save_model_path", default="Path to load checkpoint files", type=str, help="Save model path")
+parser.add_argument("--confusion_matrix", default="Path to save the result", type=str, help="Confusion matrix")
 parser.add_argument("--cuda", type=str, default='0')
 
 def main():
