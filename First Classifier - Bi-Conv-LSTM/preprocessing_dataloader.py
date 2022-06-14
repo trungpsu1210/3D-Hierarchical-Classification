@@ -12,8 +12,6 @@ import argparse
 parser = argparse.ArgumentParser(description='Preprocessing for DataLoader')
 
 opt = parser.parse_args()
-path_read_h5_test = opt.path_read_h5_test
-path_read_h5_train = opt.path_read_h5_train
 
 class DatasetFromHdf5():
   def __init__(self, file_path):
