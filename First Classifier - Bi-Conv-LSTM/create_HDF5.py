@@ -12,8 +12,8 @@ import random
 parser = argparse.ArgumentParser(description='Generate H5py file')
 
 parser.add_argument("--path_IMG",type=str,default = 'Path to Image Folder')
-parser.add_argument("--path_write_h5_test",type=str, default = 'Path to H5 Folder')
-parser.add_argument("--path_write_h5_train_val",type=str, default = 'Path to H5 Folder')
+parser.add_argument("--path_write_h5_test",type=str, default = 'Path to save H5 test file')
+parser.add_argument("--path_write_h5_train_val",type=str, default = 'Path to save H5 train file')
 parser.add_argument("--num_slices", type=str, default=20)
 parser.add_argument("--num_non_resonant_samples", type=int, default=245)
 
