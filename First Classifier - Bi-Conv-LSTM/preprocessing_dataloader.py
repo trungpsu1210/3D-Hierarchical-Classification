@@ -11,9 +11,6 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Preprocessing for DataLoader')
 
-parser.add_argument("--path_read_h5_test",type=str, default = '/cvdata2/trung/Sonar Project/Second Stage/Implementation/First Module/H5/low_scenario_test.h5')
-parser.add_argument("--path_read_h5_train",type=str, default = '/cvdata2/trung/Sonar Project/Second Stage/Implementation/First Module/H5/low_scenario_train_val.h5')
-
 opt = parser.parse_args()
 path_read_h5_test = opt.path_read_h5_test
 path_read_h5_train = opt.path_read_h5_train
@@ -22,8 +19,8 @@ class DatasetFromHdf5():
   def __init__(self, file_path):
     super(DatasetFromHdf5, self).__init__()
     hf = h5py.File(file_path, 'r')
-    self.data = hf.get('dataset') # F x S x C x H x W
-    self.label = hf.get('Resonant_NonResonant') # (F, 1)
+    self.data = hf.get('dataset') # B x F x C x H x W
+    self.label = hf.get('Resonant_NonResonant') # (B, 1)
     self.num_subvolume = self.data.shape[0]
     self.num_img_per_subvolume = self.data.shape[1]
 
