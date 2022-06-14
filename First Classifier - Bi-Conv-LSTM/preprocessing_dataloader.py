@@ -10,6 +10,7 @@ import torch
 import argparse
 
 parser = argparse.ArgumentParser(description='Preprocessing training data for LSTM approach')
+
 parser.add_argument("--path_read_h5_test",type=str, default = '/cvdata2/trung/Sonar Project/Second Stage/Implementation/First Module/H5/low_scenario_test.h5')
 parser.add_argument("--path_read_h5_train",type=str, default = '/cvdata2/trung/Sonar Project/Second Stage/Implementation/First Module/H5/low_scenario_train_val.h5')
 
