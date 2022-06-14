@@ -9,7 +9,7 @@ import pandas as pd
 from numpy import ndarray
 import random
 
-parser = argparse.ArgumentParser(description='Generate H5 file')
+parser = argparse.ArgumentParser(description='Generate H5py file')
 
 parser.add_argument("--path_IMG",type=str,default = 'Path to Image Folder')
 parser.add_argument("--path_write_h5_test",type=str, default = 'Path to H5 Folder')
