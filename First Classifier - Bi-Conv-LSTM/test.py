@@ -143,10 +143,8 @@ def Draw_confusion_matrix(cm, target_names, title='Confusion matrix', cmap=None,
 
     plt.tight_layout()
     plt.ylabel('True label')
-    # plt.xlabel('Predicted label\nAccuracy={:0.3f}; Misclass={:0.3f}'.format(accuracy, misclass))
     plt.xlabel('Predicted label')
     plt.savefig(os.path.join(opt.confusion_matrix, 'Confusion Matrix Result {}'.format(path)), dpi=200)
-    # plt.show()
     plt.close()
 
 if __name__ == "__main__":
