@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from Preporcessing_fromH5 import DatasetFromHdf5
+from preporcessing_dataloader import DatasetFromHdf5
 import os, glob
 from model import *
 import numpy as np
@@ -23,8 +23,8 @@ from sklearn.metrics import confusion_matrix
 
 import pytorch_msssim
 
-### Testing settings
-parser = argparse.ArgumentParser(description="Pytorch ensemble sonar classification")
+parser = argparse.ArgumentParser(description="Test the performance of model")
+
 parser.add_argument("--batchsize", type=int, default=184, help="Training batch size")
 
 ### input NoConvLSTM
