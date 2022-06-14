@@ -17,7 +17,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
 torch.cuda.empty_cache()
 
-parser = argparse.ArgumentParser(description='Preprocessing data for model')
+parser = argparse.ArgumentParser(description='Train the model')
 
 parser.add_argument("--path_read_h5_data",type=str, default = 'Path to H5 file')
 parser.add_argument("--batchsize", type=int, default=4, help="Training batch size")
