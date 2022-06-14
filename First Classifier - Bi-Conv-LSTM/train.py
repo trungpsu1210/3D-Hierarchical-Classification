@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from preprocessing_dataloader import DatasetFromHdf5
 import os, glob
-from model import Densenet_LSTM
+from Bi_Conv_LSTM_model import Densenet_LSTM
 import numpy as np
 from utils import *
 from tqdm import tqdm
