@@ -12,34 +12,29 @@ import argparse
 from torch.utils.data import DataLoader
 from model import *
 import pytorch_msssim
-from Preporcessing_fromH5 import DatasetFromHdf5
+from preporcessing_dataloader import DatasetFromHdf5
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
 torch.cuda.empty_cache()
 
 parser = argparse.ArgumentParser(description='Preprocessing data for model')
 
-parser.add_argument("--path_read_h5_data",type=str, default = './H5/High - Aug/Train_80_pct_184_samples_Ag.h5')
+parser.add_argument("--path_read_h5_data",type=str, default = 'Path to H5 file')
 parser.add_argument("--batchsize", type=int, default=4, help="Training batch size")
-parser.add_argument("--save_path_result", default="./Results/High - Aug/Metrics", type=str, help="Result folder")
-parser.add_argument("--save_path_csv", default="./Results/High - Aug/Metrics/results_statistic.csv", type=str, help="Save CSV result")
-parser.add_argument("--save_model_path", default="./Checkpoint/High - Aug/Metrics", type=str, help="Save model path")
-
+parser.add_argument("--save_path_result", default="Path to result folder")
+parser.add_argument("--save_path_csv", default="Path to result file")
+parser.add_argument("--save_model_path", default="Path to checkpoint file")
 parser.add_argument("--lr", type=float, default=0.00016, help="Learning Rate, Default=0.1")
 parser.add_argument("--lr_reduce", type=float, default=0.75, help="rate of reduction of learning rate, Default=0.4")
 parser.add_argument("--num_epochs", type=int, default=100, help="Number of epochs to train for")
-parser.add_argument("--num_iter_toprint", type=int, default=4, help="Training patch size")
-parser.add_argument("--block_config", type=int, default=(8,12,8,8), help="Training patch size")
+parser.add_argument("--num_iter_toprint", type=int, default=4, help="Step to print the loss in training")
 parser.add_argument("--step", type=int, default=10, help="Sets the learning rate to the initial LR decayed by momentum every n epochs, Default=5")
 parser.add_argument("--cuda", type=str, default='0')
 parser.add_argument("--start_epoch", default=1, type = int, help="Manual epoch number (useful on restarts)")
-parser.add_argument("--resume", default="./model/dense_cbam_cmv_BloodOrCSF_onlyPIH_ct_2D3D_32_fold5of5/model_epoch_40000.pth" , type=str, help="Path to checkpoint, Default=None")
-parser.add_argument("--clip", type=float, default=0.01, help="Clipping Gradients, Default=0.01")
 parser.add_argument("--threads", type=int, default=4, help="Number of threads for data loader to use, Default=1")
 parser.add_argument("--momentum", default=0.9, type=float, help="Momentum, Default=0.9")
 parser.add_argument("--weight_decay", "--wd", default=1e-6, type=float, help="Weight decay, Default=1e-4")
 parser.add_argument("--pretrained", default="", type=str, help='path to pretrained model_files, Default=None')
-parser.add_argument("--ID", default="", type=str, help='ID for training')
 
 def main():
 
@@ -56,7 +51,7 @@ def main():
   save_model_path = opt.save_model_path
   start_epoch = opt.start_epoch
   writer = SummaryWriter('runs/Experiment')
-
+  device = get_default_device()
 
   print('Load data')
   dataset = DatasetFromHdf5(path_read_h5_data)
@@ -65,10 +60,7 @@ def main():
   train_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=batchsize, shuffle=True)
   validation_loader = DataLoader(dataset=validation_set, num_workers=opt.threads, batch_size=batchsize, shuffle=True)
 
-  device = get_default_device()
-
   print('Load model')
-
   model = Fusion_model()
   model = to_device(model, device)
   model = torch.nn.DataParallel(model).cuda()
@@ -154,14 +146,15 @@ def train(train_loader, optimizer, model, epoch, cls_criterion, re_criterion, MS
       param_group["lr"] = lr
     print("Epoch={}, lr={}".format(epoch, optimizer.param_groups[0]["lr"]))
 
-    ### Stage 1: Only train the reconstruction branch
+    # Stage 1: Only train the reconstruction branch
     if epoch < 26:
       Freeze = False
 
-    ### Stage 2: Train all
+    # Stage 2: Train all
     else:
       Freeze = True
-
+    
+    # Freeze some blocks when training 
     for param in model.module.classifier.parameters():
       param.requires_grad = Freeze
     for param in model.module.AT_model.parameters():
@@ -200,7 +193,8 @@ def train(train_loader, optimizer, model, epoch, cls_criterion, re_criterion, MS
         total_loss = re_loss + MSSSIM_loss
       else:
         total_loss = cls_loss + 0.01*re_loss + 0.005*MSSSIM_loss
-
+      
+      # Tensorboard
       writer.add_scalar('Total_loss', total_loss, epoch * len(train_loader) + iteration)
       writer.add_scalar('Cls_loss', cls_loss, epoch * len(train_loader) + iteration)
       writer.add_scalar('Re_loss', re_loss, epoch * len(train_loader) + iteration)
