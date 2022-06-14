@@ -8,23 +8,10 @@ from utils import *
 from Preporcessing_fromH5 import DatasetFromHdf5
 import argparse
 
-# parser = argparse.ArgumentParser(description='Test model')
-#
-# parser.add_argument("--path_read_h5",type=str, default = './H5/Low - No Aug/Train_20_pct_46_samples.h5')
-#
-# opt = parser.parse_args()
-# path_read_h5 = opt.path_read_h5
-
-### Call device to add variable ###
 device = get_default_device()
 
-########################################################################################
 ### Multi Slices model ###
-
-
-########################################################################################
-### Bidirectional Convolutional LSTM ###
-
+#Bidirectional Convolutional LSTM
 
 class ConvLSTMCell(nn.Module):
 
@@ -84,7 +71,6 @@ class ConvLSTMCell(nn.Module):
         height, width = image_size
         return (torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device),
                 torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device))
-
 
 class ConvLSTM(nn.Module):
 
@@ -215,7 +201,6 @@ class ConvLSTM(nn.Module):
             param = [param] * num_layers
         return param
 
-
 class ConvBLSTM(nn.Module):
 
     # Constructor
@@ -242,9 +227,7 @@ class ConvBLSTM(nn.Module):
         output_list_cat = torch.cat((y_out_fwd[0], y_out_rev[0]), dim=2)
         return output_list_cat
 
-
-########################################################################################
-### DenseNet Decoder ###
+# DenseNet Decoder 
 
 class BottleneckDecoderBlock(nn.Module):
     def __init__(self, in_planes, out_planes, dropRate=0.0):
@@ -321,7 +304,6 @@ class ResidualBlock(nn.Module):
             out = F.dropout(out, p=self.droprate, inplace=False, training=self.training)
         return out
 
-
 class TransitionBlock(nn.Module):
     def __init__(self, in_planes, out_planes, dropRate=0.0):
         super(TransitionBlock, self).__init__()
@@ -336,7 +318,6 @@ class TransitionBlock(nn.Module):
         if self.droprate > 0:
             out = F.dropout(out, p=self.droprate, inplace=False, training=self.training)
         return F.upsample_nearest(out, scale_factor=2)
-
 
 class DenseNet_Decoder(nn.Module):
     def __init__(self):
@@ -382,10 +363,10 @@ class DenseNet_Decoder(nn.Module):
         self.residual_block86 = ResidualBlock(16)
         self.conv_refin = nn.Conv2d(19, 20, 3, 1, 1)
         self.tanh = nn.Tanh()
-        self.conv1010 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  # 1mm
-        self.conv1020 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  # 1mm
-        self.conv1030 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  # 1mm
-        self.conv1040 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  # 1mm
+        self.conv1010 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  
+        self.conv1020 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0) 
+        self.conv1030 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  
+        self.conv1040 = nn.Conv2d(20, 1, kernel_size=1, stride=1, padding=0)  
         self.refine3 = nn.Conv2d(20 + 4, 3, kernel_size=3, stride=1, padding=1)
         self.upsample = F.upsample_nearest
         self.relu = nn.ReLU(inplace=True)
@@ -422,14 +403,11 @@ class DenseNet_Decoder(nn.Module):
         x1020 = self.upsample(self.relu(self.conv1020(x102)), size=shape_out)
         x1030 = self.upsample(self.relu(self.conv1030(x103)), size=shape_out)
         x1040 = self.upsample(self.relu(self.conv1040(x104)), size=shape_out)
-        dehaze = torch.cat((x1010, x1020, x1030, x1040, x9), 1)
-        dehaze = self.refine3(dehaze)
-        return dehaze
+        reconstruct = torch.cat((x1010, x1020, x1030, x1040, x9), 1)
+        reconstruct = self.refine3(reconstruct)
+        return reconstruct
 
-
-########################################################################################
-### DenseNet Encoder ###
-
+# DenseNet Encoder 
 
 class DenseNet_Encoder(nn.Module):
   def __init__(self):
@@ -494,10 +472,7 @@ class DenseNet_Encoder(nn.Module):
 
     return feat_extract, re_images
 
-
-########################################################################################
-### Final Model ###
-
+#Final Model 
 
 class Before_cat(nn.Module):
 
@@ -521,7 +496,6 @@ class After_cat(nn.Module):
     def __init__(self):
         super(After_cat, self).__init__()
         self.network = nn.Sequential(
-
             # 20 slices
             nn.Linear(640, 256),
             nn.ReLU(),
@@ -567,10 +541,7 @@ class Densenet_En_De_BCLSTM(nn.Module):
 
         return final_out, reconstruct_images
 
-
-########################################################################################
 ### Cross track MIP model ###
-
 
 class Cross_track_model(nn.Module):
 
@@ -591,8 +562,6 @@ class Cross_track_model(nn.Module):
 
         return out
 
-
-########################################################################################
 ### Along track MIP model ###
 
 
@@ -615,8 +584,7 @@ class Along_track_model(nn.Module):
 
         return out
 
-########################################################################################
-### Concatenation together ###
+### Fusion together ###
 
 class Fusion_model(nn.Module):
 
@@ -642,14 +610,3 @@ class Fusion_model(nn.Module):
         out = self.classifier(total_feature)
 
         return out, Re_img
-
-
-# AT_data = torch.rand((5, 3, 98, 98)).cuda()
-# CT_data = torch.rand((5, 3, 98, 98)).cuda()
-# MS_data = torch.rand((5, 20, 3, 128, 128)).cuda()
-#
-# model = Fusion_model()
-# model = to_device(model, device)
-# out, re = model(AT_data, CT_data, MS_data)
-# print(out.shape)
-# print(re.shape)
