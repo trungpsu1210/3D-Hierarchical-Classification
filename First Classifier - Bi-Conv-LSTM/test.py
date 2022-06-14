@@ -27,6 +27,7 @@ parser.add_argument("--num_iter_toprint", type=int, default=30, help="Print the 
 parser.add_argument("--path_data", default="Path to H5py", type=str, help="Testing datapath")
 parser.add_argument("--save_model_path", default="Path to save the model results", type=str, help="Save model path")
 parser.add_argument("--confusion_matrix", default="Path to save the model results, type=str, help="Confusion matrix")
+parser.add_argument("--save_model_path", default="Path to load checkpoint files", type=str, help="Save model path")
 parser.add_argument("--num_out", type=int, default=2, help="how many classes in outputs?")
 parser.add_argument("--pretrained", default="", type=str, help='path to pretrained model_files, Default=None')
 parser.add_argument("--threads", type=int, default=1, help="Number of threads for data loader to use, Default=1")
