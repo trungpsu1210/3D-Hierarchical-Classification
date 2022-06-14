@@ -1,1 +1,1 @@
-# 3D-hierarchical-classification
+# Hierarchical classification for 3D image data
