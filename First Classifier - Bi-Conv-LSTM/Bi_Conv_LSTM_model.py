@@ -66,7 +66,6 @@ class ConvLSTMCell(nn.Module):
         return (torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device),
                 torch.zeros(batch_size, self.hidden_dim, height, width, device=self.conv.weight.device))
 
-
 class ConvLSTM(nn.Module):
 
     """
@@ -196,7 +195,6 @@ class ConvLSTM(nn.Module):
             param = [param] * num_layers
         return param
 
-
 class ConvBLSTM(nn.Module):
 
     # Constructor
@@ -215,31 +213,12 @@ class ConvBLSTM(nn.Module):
         xforward, xreverse = B T C H W tensors.
         """
 
-        # pdb.set_trace()
         reversed_idx = list(reversed(range(xreverse.shape[1])))
         xreverse = xreverse[:, reversed_idx, :, :, :]  # reverse temporal outputs.
         y_out_fwd, _ = self.forward_net(xforward)
         y_out_rev, _ = self.reverse_net(xreverse)
-        # y_out_fwd_tensor = torch.tensor(y_out_fwd)
-        # y_out_rev_tensor = torch.tensor(y_out_rev)
         output_list_cat = torch.cat((y_out_fwd[0], y_out_rev[0]), dim=2)
-        # # pdb.set_trace()
-        # y_out_fwd = y_out_fwd[-1]  # outputs of last CLSTM layer = B, T, C, H, W
-        # y_out_rev = y_out_rev[-1]  # outputs of last CLSTM layer = B, T, C, H, W
-        #
-        # # reversed_idx = list(reversed(range(y_out_rev.shape[1])))
-        # # y_out_rev = y_out_rev[:, reversed_idx, ...] # reverse temporal outputs.
-        # y_out_fwd_last = y_out_fwd[:, -1, :, :, :]
-        # y_out_rev_last = y_out_rev[:, -1, :, :, :]
-        #
-        # y_out_previous = y_out_fwd[:, 0, :, :, :]
-        # y_out_latter = y_out_rev[:, 0, :, :, :]
-        #
-        # # pdb.set_trace()
-        # ycat = torch.cat((y_out_fwd_last, y_out_rev_last), dim=1)
-        # # ycat = self.conv(ycat)
-        #
-        # return y_out_previous, ycat, y_out_latter
+
         return output_list_cat
 
 class Densenet(nn.Module):
@@ -275,16 +254,9 @@ class Classifier_after_cat(nn.Module):
 
     def __init__(self):
         super(Classifier_after_cat, self).__init__()
-        self.network = nn.Sequential(
-            ### 16 slices
-            # nn.Linear(512, 128),
-
-            ## 24 slices
-            # nn.Linear(768, 128),
-
-            ## 20 slices
+        self.network = nn.Sequential(   
+            # 20 frames
             nn.Linear(640, 128),
-
             nn.ReLU(),
             nn.Linear(128, 32),
             nn.Dropout(p=0.9),
@@ -318,14 +290,7 @@ class Densenet_LSTM(nn.Module):
             # input_tensor = torch.cat((input_tensor, x), dim = 0)
             input_tensor_LSTM[:, step, :, :, :] = x
 
-        ### Dont use LSTM
-        #output = input_tensor_LSTM
-
-        ### Use ConvLSTM
-        # output_layer,_ = self.ConvLSTM(input_tensor_LSTM)
-        # output = output_layer[0]
-
-        ## Use ConvBLSTM
+        # Use Bidirectional Convolutional LSTM
         output = self.ConvBLSTM(input_tensor_LSTM, input_tensor_LSTM)
 
         for step in range(Slice):
