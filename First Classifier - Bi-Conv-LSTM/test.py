@@ -20,67 +20,42 @@ import h5py
 import sklearn.metrics
 from sklearn.metrics import plot_precision_recall_curve
 
-### Testing settings
-parser = argparse.ArgumentParser(description="Pytorch ensemble sonar classification")
-parser.add_argument("--batchsize", type=int, default=380, help="Training batch size")
-parser.add_argument("--num_iter_toprint", type=int, default=30, help="Training patch size")
-parser.add_argument("--patchsize", type=int, default=512, help="Training patch size")
+parser = argparse.ArgumentParser(description="Test the performance of model")
 
-### input NoConvLSTM
-# parser.add_argument("--path_data", default="./H5/Test/288_samples_Test_32_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_model_path", default="./Checkpoint/NoConvLSTM/288 samples/32 Slices", type=str, help="Save model path")
-# parser.add_argument("--confusion_matrix", default="./Result/NoConvLSTM/288 samples/32 Slices", type=str, help="Confusion matrix")
-
-### input ConvLSTM
-# parser.add_argument("--path_data", default="./H5/Test/288_samples_Test_32_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_model_path", default="./Checkpoint/ConvLSTM/288 samples/32 Slices", type=str, help="Save model path")
-# parser.add_argument("--confusion_matrix", default="./Result/ConvLSTM/288 samples/32 Slices", type=str, help="Confusion matrix")
-
-### input Bidirectional ConvLSTM
-parser.add_argument("--path_data", default="./H5/high_scenario_test.h5", type=str, help="Training datapath")
-parser.add_argument("--save_model_path", default="./Checkpoint/High Scenario", type=str, help="Save model path")
-parser.add_argument("--confusion_matrix", default="./Result/High Scenario", type=str, help="Confusion matrix")
-
-parser.add_argument("--nEpochs", type=int, default=75, help="Number of epochs to train for")
-parser.add_argument("--lr", type=float, default=0.0001, help="Learning Rate, Default=0.1")
-parser.add_argument("--lr_reduce", type=float, default=0.5, help="rate of reduction of learning rate, Default=0.4")
+parser.add_argument("--batchsize", type=int, default=380, help="Testing batch size")
+parser.add_argument("--num_iter_toprint", type=int, default=30, help="Print the loss metric in training")
+parser.add_argument("--path_data", default="Path to H5py", type=str, help="Testing datapath")
+parser.add_argument("--save_model_path", default="Path to save the model results", type=str, help="Save model path")
+parser.add_argument("--confusion_matrix", default="Path to save the model results, type=str, help="Confusion matrix")
 parser.add_argument("--num_out", type=int, default=2, help="how many classes in outputs?")
-parser.add_argument("--block_config", type=int, default=(8,12,8,8), help="Training patch size")
-parser.add_argument("--step", type=int, default=10, help="Sets the learning rate to the initial LR decayed by momentum every n epochs, Default=5")
-parser.add_argument("--cuda", type=str, default='0')
-parser.add_argument("--resume", default="./model/dense_cbam_cmv_BloodOrCSF_onlyPIH_ct_2D3D_32_fold5of5/model_epoch_40000.pth" , type=str, help="Path to checkpoint, Default=None")
-parser.add_argument("--start_epoch", default=1, type = int, help="Manual epoch number (useful on restarts)")
-parser.add_argument("--clip", type=float, default=0.01, help="Clipping Gradients, Default=0.01")
-parser.add_argument("--threads", type=int, default=0, help="Number of threads for data loader to use, Default=1")
-parser.add_argument("--momentum", default=0.9, type=float, help="Momentum, Default=0.9")
-parser.add_argument("--weight_decay", "--wd", default=1e-6, type=float, help="Weight decay, Default=1e-4")
 parser.add_argument("--pretrained", default="", type=str, help='path to pretrained model_files, Default=None')
-parser.add_argument("--ID", default="", type=str, help='ID for training')
-
+parser.add_argument("--threads", type=int, default=1, help="Number of threads for data loader to use, Default=1")
+                    
 def main():
+                    
     global opt, model
-
     opt = parser.parse_args()
+                    
     save_model_path = opt.save_model_path
     path_data = opt.path_data
     batchsize = opt.batchsize
 
-    ## Load model
+    print('Load model')
     device = get_default_device()
     model = Densenet_LSTM()
     model = to_device(model, device)
     model = torch.nn.DataParallel(model).cuda()
 
-    ## Load data
+    print('Load data')
     dataset = DatasetFromHdf5(path_data)
     dataloader = DataLoader(dataset=dataset, num_workers=opt.threads, batch_size=batchsize, shuffle=False)
     dataloader = DeviceDataLoader(dataloader, device)
 
     i = 0
     for checkpoint_save_path in glob.glob(save_model_path + '/*'):
+                    
         model.load_state_dict(torch.load(checkpoint_save_path))
         model.eval()
-
         save_name = checkpoint_save_path.split('/')[-1]
 
         accuracy, sensitivity, specificity, Array_CM, AUCPR = check_accuracy(dataloader, model)
