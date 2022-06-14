@@ -7,9 +7,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from preprocessing_train_LSTM import DatasetFromHdf5
+from preprocessing_dataloader import DatasetFromHdf5
 import os, glob
-from ConvLSTM_model import Densenet_LSTM
+from model import Densenet_LSTM
 import numpy as np
 from utils import *
 from tqdm import tqdm
@@ -17,52 +17,28 @@ import pandas as pd
 import h5py
 from torch.utils.tensorboard import SummaryWriter
 
-### Training settings
-parser = argparse.ArgumentParser(description="Pytorch LSTM sonar classification")
+parser = argparse.ArgumentParser(description="Train the model")
 
-### Batch size
 parser.add_argument("--batchsize", type=int, default=8, help="Training batch size")
-
-parser.add_argument("--num_iter_toprint", type=int, default=8, help="Training patch size")
-parser.add_argument("--patchsize", type=int, default=512, help="Training patch size")
-
-### input NoConvLSTM
-# parser.add_argument("--path_read_data", default="./H5/Train and Validation/72_samples_Train_and_Validation_16_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_path_result", default="./Result/NoConvLSTM/72 samples/16 Slices", type=str, help="Result folder")
-# parser.add_argument("--save_path_csv", default="./Result/NoConvLSTM/72 samples/16 Slices/results_table_16_slices.csv", type=str, help="Save CSV result")
-# parser.add_argument("--save_model_path", default="./Checkpoint/NoConvLSTM/72 samples/16 Slices", type=str, help="Save model path")
-
-### input ConvLSTM
-# parser.add_argument("--path_read_data", default="./H5/Train and Validation/288_samples_Train_and_Validation_32_slices.h5", type=str, help="Training datapath")
-# parser.add_argument("--save_path_result", default="./Result/ConvLSTM/288 samples/32 Slices", type=str, help="Result folder")
-# parser.add_argument("--save_path_csv", default="./Result/ConvLSTM/288 samples/32 Slices/results_table_LSTM_32_slices.csv", type=str, help="Save CSV result")
-# parser.add_argument("--save_model_path", default="./Checkpoint/ConvLSTM/288 samples/32 Slices", type=str, help="Save model path")
-
-### input BiConvLSTM
-parser.add_argument("--path_read_data", default="./H5/low_scenario_train_val.h5", type=str, help="Training datapath")
-parser.add_argument("--save_path_result", default="./Result/Low Scenario", type=str, help="Result folder")
-parser.add_argument("--save_path_csv", default="./Result/Low Scenario/results_table_low_scenario.csv", type=str, help="Save CSV result")
-parser.add_argument("--save_model_path", default="./Checkpoint/Low Scenario", type=str, help="Save model path")
-
-parser.add_argument("--nEpochs", type=int, default=75, help="Number of epochs to train for")
+parser.add_argument("--num_iter_toprint", type=int, default=8, help="Print the value in training")
+parser.add_argument("--path_read_data", default="Path to read data", type=str, help="Training datapath")
+parser.add_argument("--save_path_result", default="Path to save results", type=str, help="Result folder")
+parser.add_argument("--save_path_csv", default="Path to save result file", type=str, help="Save CSV result")
+parser.add_argument("--save_model_path", default="Path to save check point file", type=str, help="Save model path")
 parser.add_argument("--lr", type=float, default=0.0001, help="Learning Rate, Default=0.1")
 parser.add_argument("--lr_reduce", type=float, default=0.5, help="rate of reduction of learning rate, Default=0.4")
 parser.add_argument("--num_epochs", type=int, default=50, help="Number of epochs to train for")
-parser.add_argument("--num_out", type=int, default=2, help="how many classes in outputs?")
-
-parser.add_argument("--block_config", type=int, default=(8,12,8,8), help="Training patch size")
+parser.add_argument("--num_out", type=int, default=2, help="how many classes in outputs")
 parser.add_argument("--step", type=int, default=10, help="Sets the learning rate to the initial LR decayed by momentum every n epochs, Default=5")
 parser.add_argument("--cuda", type=str, default='0')
 parser.add_argument("--start_epoch", default=1, type = int, help="Manual epoch number (useful on restarts)")
-parser.add_argument("--resume", default="./model/dense_cbam_cmv_BloodOrCSF_onlyPIH_ct_2D3D_32_fold5of5/model_epoch_40000.pth" , type=str, help="Path to checkpoint, Default=None")
-parser.add_argument("--clip", type=float, default=0.01, help="Clipping Gradients, Default=0.01")
 parser.add_argument("--threads", type=int, default=1, help="Number of threads for data loader to use, Default=1")
 parser.add_argument("--momentum", default=0.9, type=float, help="Momentum, Default=0.9")
 parser.add_argument("--weight_decay", "--wd", default=1e-6, type=float, help="Weight decay, Default=1e-4")
 parser.add_argument("--pretrained", default="", type=str, help='path to pretrained model_files, Default=None')
-parser.add_argument("--ID", default="", type=str, help='ID for training')
 
 def main():
+    
     global opt, model
     opt = parser.parse_args()
 
@@ -75,14 +51,16 @@ def main():
     num_epochs = opt.num_epochs
     save_model_path = opt.save_model_path
     start_epoch = opt.start_epoch
-    writer = SummaryWriter('runs/Experiment')
+    writer = SummaryWriter('runs/Experiment') #Tensorboard
+    device = get_default_device()
+    
+    print('Load Data')
     dataset = DatasetFromHdf5(path_read_data)
     train_set, validation_set = torch.utils.data.random_split(dataset, [72, 23])
-
     train_loader = DataLoader(dataset=train_set, num_workers= opt.threads, batch_size=batchsize, shuffle=True)
     validation_loader = DataLoader(dataset=validation_set, num_workers=opt.threads, batch_size=batchsize, shuffle=True)
 
-    device = get_default_device()
+    print('Load Model')
     model = Densenet_LSTM()
     model = to_device(model, device)
     model = torch.nn.DataParallel(model).cuda()
@@ -108,8 +86,8 @@ def main():
         ave_loss.append(average_loss)
         plot_check(val_acc_epoch, train_acc_epoch, ave_loss, epoch)
 
-
 def plot_check(val_acc_epoch, train_acc_epoch, average_loss, epoch):
+    
     plt.figure()
 
     plt.subplot(2,1,1)
@@ -127,7 +105,7 @@ def plot_check(val_acc_epoch, train_acc_epoch, average_loss, epoch):
     df = pd.DataFrame({'epoch': epoch, 'Val Accuracy': val_acc_epoch, 'Train Accuracy': train_acc_epoch,
                        'Loss': average_loss})
     df.to_csv(opt.save_path_csv)
-    if epoch%1 == 0:
+    if epoch%10 == 0:
         saveModel_per_epoch(epoch)
 
 def saveModel_per_epoch(epoch):
@@ -176,10 +154,6 @@ def train(training_data_loader, optimizer, model, epoch,  criterion, opt, writer
         loss_tr = []
         input_data, label = batch
         label = label.view(-1)
-        # form the tables of label and select data to train
-        # input_data: N x 1 x H x W;
-        # out: N x num_classes;
-        # out is unnormalized
         out = model(input_data.cuda())
         loss = criterion(out, label.cuda())
         writer.add_scalar('Training_loss_data', loss, epoch * len(training_data_loader) + iteration)
