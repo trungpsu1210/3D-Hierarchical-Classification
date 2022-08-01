@@ -4,7 +4,7 @@ This code originally is proposed for hierarchical classification for 3D sonar im
 
 ## Flow chart of proposed idea is here ##
 
-![alt text](https://github.com/trungpsu1210/3D-Hierarchical-Classification/blob/main/Propose%20Idea%20Github.png)
+![alt text](https://github.com/trungpsu1210/3D-Hierarchical-Classification/blob/main/FlowChart.png)
 
 ## Structure of the code ##
 
