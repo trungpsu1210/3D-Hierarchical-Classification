@@ -69,7 +69,7 @@ def main():
   validation_loader = DeviceDataLoader(validation_loader, device)
 
   cls_criterion = nn.CrossEntropyLoss()
-  re_criterion = nn.MSELoss()
+  re_criterion = nn.SmoothL1Loss()
   MSSSIM_criterion = pytorch_msssim.MSSSIM()
 
   optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
