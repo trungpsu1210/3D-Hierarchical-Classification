@@ -15,6 +15,7 @@ import pytorch_msssim
 from preporcessing_dataloader import DatasetFromHdf5
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim as optim
+import time,math
 torch.cuda.empty_cache()
 
 parser = argparse.ArgumentParser(description='Train the model')
@@ -139,9 +140,13 @@ def adjust_learning_rate(epoch):
   lr = opt.lr * (opt.lr_reduce ** (epoch // opt.step))
   return lr
 
+def lr_schedule_cosdecay(epoch,num_epochs,init_lr=opt.lr):
+	lr=0.5*(1+math.cos(epoch*math.pi/num_epochs))*init_lr
+	return lr
+
 def train(train_loader, optimizer, model, epoch, cls_criterion, re_criterion, MSSSIM_criterion, opt, writer):
 
-    lr = adjust_learning_rate(epoch - 1)
+    lr = lr_schedule_cosdecay(epoch,num_epochs,init_lr=opt.lr)
     for param_group in optimizer.param_groups:
       param_group["lr"] = lr
     print("Epoch={}, lr={}".format(epoch, optimizer.param_groups[0]["lr"]))
