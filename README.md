@@ -29,5 +29,16 @@ Deep learning libraries/frameworks: OpenCV, HDF5, TensorBoard,Pandas,...
 
 To run the code, make sure all the files are in the corresponding folders
 
+## Citation ##
+
+If you find this method useful for your work/research, please cite our paper:
+
+```
+@INPROCEEDINGS{Igarss2022trungpsu,
+  author={Hoang, Trung and Dalton, Kyle S. and Gerg, Isaac D. and Blanford, Thomas E. and Brown, Daniel C. and Monga, Vishal},
+  booktitle={IGARSS 2022 - 2022 IEEE International Geoscience and Remote Sensing Symposium}, 
+  title={Domain Enriched Deep Networks for Munition Detection in Underwater 3D Sonar Imagery}, 
+  year={2022},
+```
  
 
