@@ -40,7 +40,8 @@ If you find this method useful for your work/research, please cite our paper:
   title={Domain Enriched Deep Networks for Munition Detection in Underwater 3D Sonar Imagery}, 
   year={2022},
   pages={815-818},
-  doi={10.1109/IGARSS46834.2022.9884793}}
+  doi={10.1109/IGARSS46834.2022.9884793}
+  }
 ```
  
 
