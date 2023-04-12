@@ -34,11 +34,13 @@ To run the code, make sure all the files are in the corresponding folders
 If you find this method useful for your work/research, please cite our paper:
 
 ```
-@INPROCEEDINGS{Igarss2022trungpsu,
+@inproceedings{igarss20223Dsonartrungpsu,
   author={Hoang, Trung and Dalton, Kyle S. and Gerg, Isaac D. and Blanford, Thomas E. and Brown, Daniel C. and Monga, Vishal},
   booktitle={IGARSS 2022 - 2022 IEEE International Geoscience and Remote Sensing Symposium}, 
   title={Domain Enriched Deep Networks for Munition Detection in Underwater 3D Sonar Imagery}, 
   year={2022},
+  pages={815-818},
+  doi={10.1109/IGARSS46834.2022.9884793}}
 ```
  
 
