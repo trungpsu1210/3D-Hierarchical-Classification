@@ -261,8 +261,7 @@ class Classifier_after_cat(nn.Module):
             nn.Linear(128, 32),
             nn.Dropout(p=0.9),
             nn.ReLU(),
-            nn.Linear(32, 2),
-            nn.Softmax()
+            nn.Linear(32, 2)
         )
 
     def forward(self, images):
