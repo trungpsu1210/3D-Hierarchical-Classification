@@ -597,8 +597,7 @@ class Fusion_model(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(96, 32),
             nn.ReLU(),
-            nn.Linear(32, 3),
-            nn.Softmax()
+            nn.Linear(32, 3)
         )
 
     def forward(self, AT_img, CT_img, MS_img):
