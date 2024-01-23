@@ -34,6 +34,18 @@ To run the code, make sure all the files are in the corresponding folders
 If you find this method useful for your work/research, please cite our paper:
 
 ```
+@article{tgrs20233Dsonartrungpsu,
+  author={Hoang, Trung and Dalton, Kyle S. and Gerg, Isaac D. and Blanford, Thomas E. and Brown, Daniel C. and Monga, Vishal},
+  journal={IEEE Transactions on Geoscience and Remote Sensing}, 
+  title={Resonant Scattering-Inspired Deep Networks for Munition Detection in 3D Sonar Imagery}, 
+  year={2023},
+  volume={61},
+  pages={1-17},
+  doi={10.1109/TGRS.2023.3324223}
+  }
+```
+
+```
 @inproceedings{igarss20223Dsonartrungpsu,
   author={Hoang, Trung and Dalton, Kyle S. and Gerg, Isaac D. and Blanford, Thomas E. and Brown, Daniel C. and Monga, Vishal},
   booktitle={IGARSS 2022 - 2022 IEEE International Geoscience and Remote Sensing Symposium}, 
